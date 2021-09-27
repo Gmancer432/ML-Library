@@ -219,7 +219,7 @@ def ID3(data, atrsDict, atrsList, purityfn, maxdepth):
 	maxCount = max(labelCounts)
 	labellist = atrsDict['label'].values
 	majoritylabel = labellist[labelCounts.index(maxCount)]
-	if maxCount == totalCount or len(atrsList) == 0:
+	if maxCount == totalCount or len(atrsList) == 0 or maxdepth <= 0:
 		return DecisionTreeLeaf(majoritylabel)
 	# Find the attribute with the best information gain
 	purity = purityfn(labelCounts, totalCount)

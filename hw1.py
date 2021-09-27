@@ -8,6 +8,8 @@ from ID3 import *
 
 ### Part 2 ###
 
+print('Question 2:\n')
+
 # Retrieve the car data
 trainingdata = ReadCSV('car data/train.csv')
 testingdata = ReadCSV('car data/test.csv')
@@ -43,7 +45,15 @@ for depth in range(1, 7):
 	testingerrors.append(curtestingerrors)
 
 # Print the table
+print('Training Errors:')
+print('Rows: depth 1-6')
+print('Columns: Entropy, ME, GI')
+print()
 PrintCSV(trainingerrors)
+print()
+print('Testing Errors:')
+print('Rows: depth 1-6')
+print('Columns: Entropy, ME, GI')
 print()
 PrintCSV(testingerrors)
 print('\n')
@@ -86,6 +96,7 @@ atrs = {
 }
 
 ## part a
+print('Question 3, part a\n')
 
 # Calculate error for each heuristic and depth
 trainingerrors = []
@@ -109,13 +120,22 @@ for depth in range(1, 17):
 	testingerrors.append(curtestingerrors)
 
 # Print the table
+print('Training Errors:')
+print('Rows: depth 1-16')
+print('Columns: Entropy, ME, GI')
+print()
 PrintCSV(trainingerrors)
+print()
+print('Testing Errors:')
+print('Rows: depth 1-16')
+print('Columns: Entropy, ME, GI')
 print()
 PrintCSV(testingerrors)
 print('\n')
 
 
 ## part b
+print('Question 3, part b\n')
 
 # for each category with unkowns in it, find the majority value and replace the unkowns with this value
 for unkcat in ('job', 'education', 'contact', 'poutcome'):
@@ -162,7 +182,15 @@ for depth in range(1, 17):
 	testingerrors.append(curtestingerrors)
 
 # Print the table
+print('Training Errors:')
+print('Rows: depth 1-16')
+print('Columns: Entropy, ME, GI')
+print()
 PrintCSV(trainingerrors)
+print()
+print('Testing Errors:')
+print('Rows: depth 1-16')
+print('Columns: Entropy, ME, GI')
 print()
 PrintCSV(testingerrors)
 print('\n')
