@@ -76,7 +76,7 @@ class DecisionTreeLeaf:
 
 # Gets counts of each value for the attribute
 # Attribute must be the category type
-def CountAttributeCat(data, attribute, atrsDict):
+def CountAttributeCat(data, attribute, atrsDict, weightidx):
 	# Set up the buckets
 	labelAtr = atrsDict[attribute]
 	valueCounts = {}
@@ -86,8 +86,9 @@ def CountAttributeCat(data, attribute, atrsDict):
 	total = 0
 	for d in data:
 		val = d[labelAtr.idx]
-		valueCounts[val] += 1
-		total += 1
+		w = d[weightidx]
+		valueCounts[val] += w
+		total += w
 	# Return the counts
 	return (list(valueCounts.values()), total)
 
@@ -103,7 +104,7 @@ def FindThreshold(data, attribute, atrsDict):
 
 # Gets counts of each value for the attribute
 # Attribute must be the numerical type
-def CountAttributeNum(data, attribute, atrsDict, thresh):
+def CountAttributeNum(data, attribute, atrsDict, thresh, weightidx):
 	# Set up the buckets
 	labelAtr = atrsDict[attribute]
 	valueCounts = [0, 0]
@@ -111,11 +112,12 @@ def CountAttributeNum(data, attribute, atrsDict, thresh):
 	total = 0
 	for d in data:
 		value = d[labelAtr.idx]
+		w = d[weightidx]
 		if value >= thresh:
-			valueCounts[0] += 1
+			valueCounts[0] += w
 		else:
-			valueCounts[1] += 1
-		total += 1
+			valueCounts[1] += w
+		total += w
 	# Return the counts
 	return (list(valueCounts.values), total)
 
@@ -204,23 +206,27 @@ def SplitDataNum(data, attribute, atrsDict, thresh):
 	return (subsets, counts, total)
 
 # Recursively creates a DecisionTree based on the inputs
-# data: list of rows of data
-# atrsDict: dictionary of Attribute objects
-# atrsList: list of attributes to choose from
-# purityfn: function that inputs data and outputs a 'purity' measure
-#           (valueCounts, total) => float
-#           Use one of the implementations of Entropy, ME, or GI
-# maxdepth: the maximum depth of the tree (0=root only, None=no limit)
-def ID3(data, atrsDict, atrsList, purityfn, maxdepth):
+# data:       list of rows of data
+# weightidx:  the index of the weight of an example in a data row
+# atrsDict:   dictionary of Attribute objects
+# atrsList:   list of attributes to choose from
+# purityfn:   function that inputs data and outputs a 'purity' measure
+#             (valueCounts, total) => float
+#             Use one of the implementations of Entropy, ME, or GI
+# maxdepth:   the maximum depth of the tree (0=root only, None=no limit)
+def ID3(data, weightidx, atrsDict, atrsList, purityfn, maxdepth):
 	# Base Cases: If all have the same label, return a leaf node
 	#             If atrsList is empty, return a leaf node with the most common label
 	#			  If maxdepth==0, return a leaf node with the most common label
-	labelCounts, totalCount = CountAttributeCat(data, 'label', atrsDict)
+	labelCounts, totalCount = CountAttributeCat(data, 'label', atrsDict, weightidx)
 	maxCount = max(labelCounts)
 	labellist = atrsDict['label'].values
 	majoritylabel = labellist[labelCounts.index(maxCount)]
-	if maxCount == totalCount or len(atrsList) == 0 or maxdepth <= 0:
+	if maxCount == totalCount or len(atrsList) == 0 or (maxdepth != None and maxdepth <= 0):
 		return DecisionTreeLeaf(majoritylabel)
+	# Update the depth
+	if maxdepth != None:
+		maxdepth -= 1
 	# Find the attribute with the best information gain
 	purity = purityfn(labelCounts, totalCount)
 	curbestgain = 0
@@ -239,7 +245,7 @@ def ID3(data, atrsDict, atrsList, purityfn, maxdepth):
 			# Calculate information gain
 			vals = attribute.values
 			for v in vals:
-				subsetlabelCounts, subsettotal = CountAttributeCat(subsets[v], 'label', atrsDict)
+				subsetlabelCounts, subsettotal = CountAttributeCat(subsets[v], 'label', atrsDict, weightidx)
 				subsetpurity = purityfn(subsetlabelCounts, subsettotal)
 				curgain -= subsettotal / total * subsetpurity
 			# Check if this attribute is the best
@@ -255,11 +261,11 @@ def ID3(data, atrsDict, atrsList, purityfn, maxdepth):
 			subsets, counts, total = SplitDataNum(data, a, atrsDict, thresh)
 			# Calculate information gain
 			# gte
-			gtelabelCounts, gtetotal = CountAttributeCat(subsets[0], 'label', atrsDict)
+			gtelabelCounts, gtetotal = CountAttributeCat(subsets[0], 'label', atrsDict, weightidx)
 			gtepurity = purityfn(gtelabelCounts, gtetotal)
 			curgain -= gtetotal / total * gtepurity
 			# lt
-			ltlabelCounts, lttotal = CountAttributeCat(subsets[1], 'label', atrsDict)
+			ltlabelCounts, lttotal = CountAttributeCat(subsets[1], 'label', atrsDict, weightidx)
 			ltpurity = purityfn(ltlabelCounts, lttotal)
 			curgain -= lttotal / total * ltpurity
 			# Check if this attribute is the best
@@ -279,14 +285,14 @@ def ID3(data, atrsDict, atrsList, purityfn, maxdepth):
 		if curbestcounts[0] == 0:
 			gtechild = DecisionTreeLeaf(majoritylabel)
 		else:
-			gtechild = ID3(curdatasubsets[0], atrsDict, newatrsList, purityfn, maxdepth-1)
+			gtechild = ID3(curdatasubsets[0], weightidx, atrsDict, newatrsList, purityfn, maxdepth)
 		node.AddGteChild(gtechild)
 		ltchild = None
 		# if the subset is empty, create a leaf with the most common label
 		if curbestcounts[1] == 0:
 			ltchild = DecisionTreeLeaf(majoritylabel)
 		else:
-			ltchild = ID3(curdatasubsets[1], atrsDict, newatrsList, purityfn, maxdepth-1)
+			ltchild = ID3(curdatasubsets[1], weightidx, atrsDict, newatrsList, purityfn, maxdepth)
 		node.AddLtChild(ltchild)
 	else:
 		node = DecisionTreeCat(curbestattribute.idx)
@@ -299,20 +305,21 @@ def ID3(data, atrsDict, atrsList, purityfn, maxdepth):
 			if curbestcounts[v] == 0:
 				child = DecisionTreeLeaf(majoritylabel)  
 			else:
-				child = ID3(curdatasubsets[v], atrsDict, newatrsList, purityfn, maxdepth-1)
+				child = ID3(curdatasubsets[v], weightidx, atrsDict, newatrsList, purityfn, maxdepth)
 			node.AddChild(v, child)
 	return node
 	
 
 # Runs through the data, generates labels, and calculates the error of the predicions
-def CalculateError(data, labelidx, DT):
+def CalculateError(data, labelidx, DT, weightidx):
 	total = 0
 	incorrect = 0
 	for d in data:
-		total += 1
+		w = d[weightidx]
+		total += w
 		outlabel = DT.PredictLabel(d)
 		if outlabel != d[labelidx]:
-			incorrect += 1
+			incorrect += w
 	return incorrect / total
 		
 	

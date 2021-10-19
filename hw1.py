@@ -2,8 +2,8 @@
 # Analysis for homework 1
 
 
-from util import *
-from ID3 import *
+from Util.util import *
+from DecisionTree.ID3 import *
 
 
 ### Part 2 ###
@@ -11,8 +11,12 @@ from ID3 import *
 print('Question 2:\n')
 
 # Retrieve the car data
-trainingdata = ReadCSV('car data/train.csv')
-testingdata = ReadCSV('car data/test.csv')
+trainingdata = ReadCSV('Data/car data/train.csv')
+testingdata = ReadCSV('Data/car data/test.csv')
+
+# Add a weight column to the data
+trwidx = AddColumn(trainingdata, 1)
+tewidx = AddColumn(testingdata, 1)
 
 # Prepare the attributes
 atrs = {
@@ -21,7 +25,7 @@ atrs = {
 	'doors'    : Attribute('doors',    2, ['2', '3', '4', '5more']),
 	'persons'  : Attribute('persons',  3, ['2', '4', 'more']),
 	'lug_boot' : Attribute('lug_boot', 4, ['small', 'med', 'big']),
-	'safety'   : Attribute('safety',      5, ['low', 'med', 'high']),
+	'safety'   : Attribute('safety',   5, ['low', 'med', 'high']),
 	'label'    : Attribute('label',    6, ['unacc', 'acc', 'good', 'vgood'])
 }
 
@@ -33,12 +37,13 @@ for depth in range(1, 7):
 	curtestingerrors = []
 	for h in (Entropy, ME, GI):
 		DT = ID3(trainingdata, 
-				 atrs, 
+				 trwidx,
+                 atrs, 
 				 ['buying', 'maint', 'doors', 'persons', 'lug_boot', 'safety'], 
 				 h, 
 				 depth)
-		curtrainerror = CalculateError(trainingdata, 6, DT)
-		curtesterror = CalculateError(testingdata, 6, DT)
+		curtrainerror = CalculateError(trainingdata, 6, DT, trwidx)
+		curtesterror = CalculateError(testingdata, 6, DT, tewidx)
 		curtrainingerrors.append(curtrainerror)
 		curtestingerrors.append(curtesterror)
 	trainingerrors.append(curtrainingerrors)
@@ -63,13 +68,17 @@ print('\n')
 ### Part 3 ###
 
 # Retrieve the bank data
-trainingdata = ReadCSV('bank data/train.csv')
-testingdata = ReadCSV('bank data/test.csv')
+trainingdata = ReadCSV('Data/bank data/train.csv')
+testingdata = ReadCSV('Data/bank data/test.csv')
 
 # Convert numerical categories into numbers
 for i in (0, 5, 9, 11, 12, 13, 14):
 	ConvertColumn(trainingdata, i, int)
 	ConvertColumn(testingdata, i, int)
+
+# Add a weight column to the data
+trwidx = AddColumn(trainingdata, 1)
+tewidx = AddColumn(testingdata, 1)
 	
 # Prepare the Attributes
 atrs = {
@@ -106,14 +115,15 @@ for depth in range(1, 17):
 	curtestingerrors = []
 	for h in (Entropy, ME, GI):
 		DT = ID3(trainingdata, 
+                 trwidx,
 				 atrs, 
 				 ['age', 'job', 'marital', 'education', 'default', 'balance', 'housing', 
 				  'loan', 'contact', 'day', 'month', 'duration', 'campaign', 'pdays', 
 				  'previous', 'poutcome'],  
 				 h, 
 				 depth)
-		curtrainerror = CalculateError(trainingdata, 16, DT)
-		curtesterror = CalculateError(testingdata, 16, DT)
+		curtrainerror = CalculateError(trainingdata, 16, DT, trwidx)
+		curtesterror = CalculateError(testingdata, 16, DT, tewidx)
 		curtrainingerrors.append(curtrainerror)
 		curtestingerrors.append(curtesterror)
 	trainingerrors.append(curtrainingerrors)
@@ -140,7 +150,7 @@ print('Question 3, part b\n')
 # for each category with unkowns in it, find the majority value and replace the unkowns with this value
 for unkcat in ('job', 'education', 'contact', 'poutcome'):
 	# Count the values
-	labelCounts, totalCount = CountAttributeCat(trainingdata, unkcat, atrs)
+	labelCounts, totalCount = CountAttributeCat(trainingdata, unkcat, atrs, trwidx)
 	# Zero out the unknown value count
 	valuelist = atrs[unkcat].values
 	unkidx = valuelist.index('unknown')
@@ -168,14 +178,15 @@ for depth in range(1, 17):
 	curtestingerrors = []
 	for h in (Entropy, ME, GI):
 		DT = ID3(trainingdata, 
+                 trwidx,
 				 atrs, 
 				 ['age', 'job', 'marital', 'education', 'default', 'balance', 'housing', 
 				  'loan', 'contact', 'day', 'month', 'duration', 'campaign', 'pdays', 
 				  'previous', 'poutcome'],  
 				 h, 
 				 depth)
-		curtrainerror = CalculateError(trainingdata, 16, DT)
-		curtesterror = CalculateError(testingdata, 16, DT)
+		curtrainerror = CalculateError(trainingdata, 16, DT, trwidx)
+		curtesterror = CalculateError(testingdata, 16, DT, trwidx)
 		curtrainingerrors.append(curtrainerror)
 		curtestingerrors.append(curtesterror)
 	trainingerrors.append(curtrainingerrors)

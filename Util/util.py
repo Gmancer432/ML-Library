@@ -16,6 +16,14 @@ def ConvertColumn(data, columnidx, datatype):
 	for d in data:
 		d[columnidx] = datatype(d[columnidx])
 
+# Adds an additional column to the data
+# Returns the idx of the data column
+def AddColumn(data, defaultVal):
+    idx = len(data[0])
+    for d in data:
+        d.append(defaultVal)
+    return idx
+
 
 # Prints a list of lists in csv format
 def PrintCSV(data):
