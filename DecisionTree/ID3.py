@@ -86,7 +86,7 @@ def CountAttributeCat(data, attribute, atrsDict, weightidx):
 	total = 0
 	for d in data:
 		val = d[labelAtr.idx]
-		w = d[weightidx]
+		w = 1 if weightidx == None else d[weightidx]
 		valueCounts[val] += w
 		total += w
 	# Return the counts
@@ -315,12 +315,13 @@ def CalculateError(data, labelidx, DT, weightidx):
 	total = 0
 	incorrect = 0
 	for d in data:
-		w = d[weightidx]
+		w = 1 if weightidx == None else d[weightidx]
 		total += w
 		outlabel = DT.PredictLabel(d)
 		if outlabel != d[labelidx]:
 			incorrect += w
 	return incorrect / total
+	
 		
 	
 
