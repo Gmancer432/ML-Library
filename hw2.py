@@ -1,13 +1,15 @@
 
 from Util.util import *
 from DecisionTree.ID3 import *
-from EnsembleLearning.adaboost import *
+from EnsembleLearning.adaboost import adaboost
+from EnsembleLearning.bagging import bagging
 
 ### temp import!
 import winsound
 
 ### Part 2.b ###
-    
+print('Part 2.a\n')
+	
 # Retrieve the bank data
 trainingdata = ReadCSV('Data/bank data/train.csv')
 testingdata = ReadCSV('Data/bank data/test.csv')
@@ -41,27 +43,61 @@ for i in (0, 5, 9, 11, 12, 13, 14):
 	ConvertColumn(trainingdata, i, int)
 	ConvertColumn(testingdata, i, int)
 
-# Prepare the learning parameters
-lparams = (atrs, 
-           ['age', 'job', 'marital', 'education', 'default', 'balance', 'housing', 
-            'loan', 'contact', 'day', 'month', 'duration', 'campaign', 'pdays', 
-            'previous', 'poutcome'],  
-           Entropy, 
-           1)
+# Here is where the boosting starts
+# set to True to perform the learning
 
-(adaclassif, errs) = adaboost(trainingdata.copy(), 16, ID3, lparams, 500, True, testingdata)
+if False:
+	# Prepare the learning parameters
+	lparams = (atrs, 
+			   ['age', 'job', 'marital', 'education', 'default', 'balance', 'housing', 
+				'loan', 'contact', 'day', 'month', 'duration', 'campaign', 'pdays', 
+				'previous', 'poutcome'],  
+			   Entropy, 
+			   1)
 
-# print the errors
-print('Errors:')
-print('Rows: iterations 1-500')
-print('Columns: Final training, Final testing, Stump t training, Stump t testing')
-print()
-PrintCSV(errs)
+	(adaclassif, errs) = adaboost(trainingdata.copy(), 16, ID3, lparams, 500, True, testingdata)
+
+	# print the errors
+	print('Errors:')
+	print('Rows: iterations 1-500')
+	print('Columns: Final training, Final testing, Stump t training, Stump t testing')
+	print()
+	PrintCSV(errs)
+else:
+	print('Skipped!\n')
+
+
+
+### Part 2.b
+print('Part 2.b\n')
+
+# Here is where the bagging starts
+# set to True to perform the learning
+
+if False:
+	lparams = (atrs, 
+			   ['age', 'job', 'marital', 'education', 'default', 'balance', 'housing', 
+				'loan', 'contact', 'day', 'month', 'duration', 'campaign', 'pdays', 
+				'previous', 'poutcome'],  
+			   Entropy, 
+			   None)
+
+    # the value for m' isn't given, so I chose 1000
+	(baggedclassif, errs) = bagging(trainingdata.copy(), 16, ID3, lparams, 500, 1000, True, testingdata)
+
+	# print the errors
+	print('Errors:')
+	print('Rows: iterations 1-500')
+	print('Columns: Final training, Final testing, Tree t training, Tree t testing')
+	print()
+	PrintCSV(errs)
+else:
+	print('Skipped!')
 
 
 ### temp cmd!!
 for i in (300, 500, 400):
-    winsound.Beep(i, 1000)
+	winsound.Beep(i, 1000)
 
 
 

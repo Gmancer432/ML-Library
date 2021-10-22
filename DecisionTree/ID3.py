@@ -6,6 +6,7 @@
 
 import math
 import statistics
+import random
 
 # Data needed to process attributes
 # name: the name of the attributes
@@ -214,7 +215,9 @@ def SplitDataNum(data, attribute, atrsDict, thresh):
 #             (valueCounts, total) => float
 #             Use one of the implementations of Entropy, ME, or GI
 # maxdepth:   the maximum depth of the tree (0=root only, None=no limit)
-def ID3(data, weightidx, atrsDict, atrsList, purityfn, maxdepth):
+# maxatrs:    the maximum amount of attributes to pick from at each node.
+#             used in bagging.  maxatrs=None => no limit
+def ID3(data, weightidx, atrsDict, atrsList, purityfn, maxdepth, maxatrs=None):
 	# Base Cases: If all have the same label, return a leaf node
 	#             If atrsList is empty, return a leaf node with the most common label
 	#			  If maxdepth==0, return a leaf node with the most common label
@@ -234,7 +237,10 @@ def ID3(data, weightidx, atrsDict, atrsList, purityfn, maxdepth):
 	curdatasubsets = None
 	curbestcounts = None
 	bestthresh = 0
-	for a in atrsList:
+	curatrsList = atrsList
+	if maxatrs != None:
+		curatrsList = random.sample(atrsList, maxatrs)
+	for a in curatrsList:
 		attribute = atrsDict[a]
 		atridx = attribute.idx
 		curgain = purity
