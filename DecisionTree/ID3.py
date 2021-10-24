@@ -87,6 +87,11 @@ def CountAttributeCat(data, attribute, atrsDict, weightidx):
 	total = 0
 	for d in data:
 		val = d[labelAtr.idx]
+		if weightidx >= len(d) or weightidx < 0:
+			print(attribute)
+			print(len(d))
+			print(d)
+			print(weightidx)
 		w = 1 if weightidx == None else d[weightidx]
 		valueCounts[val] += w
 		total += w

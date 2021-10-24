@@ -20,9 +20,16 @@ def ConvertColumn(data, columnidx, datatype):
 # Returns the idx of the data column
 def AddColumn(data, defaultVal):
     idx = len(data[0])
-    for d in data:
-        d.append(defaultVal)
+    for i in range(len(data)):
+        data[i].append(defaultVal)
     return idx
+
+# Returns a true copy of a list of lists
+def CopyData(data):
+    newdata = data.copy()
+    for i in range(len(data)):
+        newdata[i] = data[i].copy()
+    return newdata
 
 
 # Prints a list of lists in csv format

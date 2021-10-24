@@ -29,6 +29,34 @@ def CalculateError(data, labelidx, classif):
 	return incorrect / total
 
 
+# Calculates the average bias and variance of a learner over the given data
+def BiasVariance(data, labelidx, classifs, poslabel):
+	sumbias = 0
+	sumvariance = 0
+	for d in data:
+		# Collect outputs
+		outs = []
+		sumout = 0
+		for c in classifs:
+			out = 1 if c.PredictLabel(d) == poslabel else -1
+			outs.append(out)
+			sumout += out
+		meanout = sumout / len(classifs)
+		# Bias
+		sumbias += (meanout - (1 if d[labelidx] == poslabel else -1))**2
+		# Variance
+		sumdiff = 0
+		for o in outs:
+			sumdiff += (o - meanout)**2
+		sumvariance += sumdiff / (len(classifs) - 1)
+	# Average over all data and return
+	return (sumbias / len(data), sumvariance / len(data))
+		
+		
+			
+			
+
+
 # Takes a classifier and trains using a bagging method
 # data:        the input data
 # labelidx:    the index of the example's label in the row
@@ -44,12 +72,11 @@ def CalculateError(data, labelidx, classif):
 #               Final classifier testing error (None if no testing data is given)
 #               single classifier t training error
 #               single classifier t testing error (None if no testing data is given)
-def bagging(data, labelidx, learner, lparams, T, m, giveErrors=False, testdata=None):
+def bagging(data, labelidx, learner, lparams, T, m, giveFinalErrors=False, giveSingleErrors=False, testdata=None):
 	# Initialize the values
 	baggedclassif = BaggedClassif([])
 	weightidx = AddColumn(data, 1)
-	if giveErrors:
-		errs = []
+	errs = []
 	
 	# Go through the iterations
 	for i in range(T):
@@ -59,16 +86,20 @@ def bagging(data, labelidx, learner, lparams, T, m, giveErrors=False, testdata=N
 		curclassif = learner(cursamples, weightidx, *lparams)
 		baggedclassif.classifs.append(curclassif)
 		# Calculate errors
-		if giveErrors:
-			curerrs = []
-			curerrs.append(CalculateError(data, labelidx, baggedclassif))                                 # ftrainerr
-			curerrs.append(None if testdata==None else CalculateError(testdata, labelidx, baggedclassif)) # ftesterr
-			curerrs.append(CalculateError(data, labelidx, curclassif))                                    # strainerr
-			curerrs.append(None if testdata==None else CalculateError(testdata, labelidx, curclassif))    # stesterr
+		curerrs = []
+		if giveFinalErrors:
+			curerrs.append(CalculateError(data, labelidx, baggedclassif))          # ftrainerr
+			if testdata != None:
+				curerrs.append(CalculateError(testdata, labelidx, baggedclassif))  # ftesterr
+		if giveSingleErrors:
+			curerrs.append(CalculateError(data, labelidx, curclassif))             # strainerr
+			if testdata != None:
+				curerrs.append(CalculateError(testdata, labelidx, curclassif))     # stesterr
+		if len(curerrs) > 0:
 			errs.append(curerrs)
 			
 	# Return the full classifier, and errors (if requested)
-	if not giveErrors:
+	if len(errs) == 0:
 		return baggedclassif
 	else:
 		return (baggedclassif, errs)
