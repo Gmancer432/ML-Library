@@ -9,8 +9,6 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-### temp import!
-import winsound
 
 ### Part 2.b ###
 print('Part 2.a\n')
@@ -324,10 +322,6 @@ else:
 	print('Skipped!\n')
 
 
-
-### temp cmd!!
-for i in (300, 500, 400):
-	winsound.Beep(i, 1000)
 
 
 
