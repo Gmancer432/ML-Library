@@ -87,6 +87,46 @@ A Random Forest is just Bagged Decision Trees, where each decision tree has maxa
 maxatrs is a parameter of the ID3 function that defaults to None.  Change this parameter to some int > 0 to create Random Trees, and bag these trees to create a Random Forest.
 
 
+-- LMS Documentation --
+
+The LMS class can be found in LinearRegression.Linear.
+
+The LMS class is created with a numpy array of weights (w).  If you want outputs to be constrained to {1, -1}, set classifier=True.  
+Data, labels, and weights that are used in LMS must be in their own numpy arrays.  Also keep in mind that data=(1, x_1, x_2, ...) and weights=(b, w_1, w_2, ...)
+
+LMS.PredictLabel(data) will output labels for a set of data.  Data must be a numpy array, but any number of datapoints may be given.
+
+LMS.Loss(data, labels) will output loss for a set of given data.
+
+LMS.Gradient(data, labels) will return a gradient wrt the weights.  This is used in Gradient Descent.
+
+AnalyticalLMS(data, labels) will return the optimal weights according to the LMS loss function, computed analytically.
+
+
+-- Gradient Descent Documentation --
+
+The Gradient Descent algorithm can be found in LinearRegression.GradientDescent.
+
+The Gradient Descent algorithm should be able to take in any classifer model that has a classifier.Gradient(data, labels) function.  Call GradientDescent with the following parameters:
+
+GradientDescent(data, labels, classifier, batchsize, r, tolerance=None, T=None, giveTrainingLoss=False, giveTestingLoss=False, testingdata=None, testinglabels=None)
+- data:  a numpy array of data.  Unlike with the decision trees, this should not have any labels
+- labels: a numpy array of labels.  label[i] must correspond to data[i].
+- classifier:  a classifier object.  This object must have a classifier.Gradient(data, labels) function, which returns an appropriate gradient.
+- batchsize:  the amount of data to perform the gradient over at each iteration.  batchsize=1 => stochastic gradient descent.
+- r: The learning rate; a float in the range of (0, 1)
+- tolerance:  defaults to None.  Currently designed for LMS, don't use if your classifier doesn't have classif.w (weights).  If the change in w is less than this tolerance, then learning stops.
+- T: The number of iterations to run.  T=None => no limit. !!Make sure to have T!= None if you set tolerance=None!!  It is recommended that you set T!=None regardless of what tolerance is set to.
+- giveTrainingLoss:  defaults to False. If True, finds the training loss at each iteration (over the current batch of data) and returns the list at the end.
+- giveTestingLoss:  defaults to False. If True, finds the testing loss (over all the testing data) at each iteration and returns the list at the end.
+- testingdata:  the testing data to test on if giveTestingLoss=True
+- testinglabels:  the testing labels to test on if giveTestingLoss=True
+- return:  A tuple of (up to) three items:
+	- classifier
+	- training losses
+	- testing losses
+
+
 
 
 
