@@ -244,6 +244,7 @@ def ID3(data, weightidx, atrsDict, atrsList, purityfn, maxdepth, maxatrs=None):
 	bestthresh = 0
 	curatrsList = atrsList
 	if maxatrs != None:
+        maxatrs = min(maxatrs, len(atrsList))
 		curatrsList = random.sample(atrsList, maxatrs)
 	for a in curatrsList:
 		attribute = atrsDict[a]
