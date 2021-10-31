@@ -9,8 +9,6 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-### temp import!
-import winsound
 
 ### Part 2.b ###
 print('Part 2.a\n')
@@ -292,8 +290,8 @@ if True:
 	w = np.ones(8)
 	classif = LMS(w)
 	# Perform gradient descent
-	lr = 0.001
-	(classif, losses) = GradientDescent(trdata, trlabels, classif, 1, lr, tolerance=None, T=7000, 
+	lr = 0.0001
+	(classif, losses) = GradientDescent(trdata, trlabels, classif, 1, lr, tolerance=None, T=100000, 
                                         giveTestingLoss=True, testingdata=tstdata, testinglabels=tstlabels)
 	# print the losses
 	print('Weight vector [b, w_1, w_2, ...]:')
@@ -324,10 +322,6 @@ else:
 	print('Skipped!\n')
 
 
-
-### temp cmd!!
-for i in (300, 500, 400):
-	winsound.Beep(i, 1000)
 
 
 
