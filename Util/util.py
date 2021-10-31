@@ -11,6 +11,26 @@ def ReadCSV(filename):
 			lines.append(line.strip().split(','))
 	return lines
 
+# Saves CSV data to a file, with an optional header list
+def SaveCSV(data, filepath, headerlist=None):
+    with open(filepath, 'w') as f:
+        if headerlist != None:
+            length = len(headerlist)
+            for i in range(length):
+                f.write(str(headerlist[i]))
+                if i != length-1:
+                    f.write(',')
+                else:
+                    f.write('\n')
+        for row in data:
+            length = len(row)
+            for i in range(length):
+                f.write(str(row[i]))
+                if i != length-1:
+                    f.write(',')
+                else:
+                    f.write('\n')
+
 # Converts a column to the given datatype
 def ConvertColumn(data, columnidx, datatype):
 	for d in data:

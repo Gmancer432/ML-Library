@@ -21,20 +21,27 @@ def GradientDescent(data, labels, classifier, batchsize, r, tolerance=None, T=No
     if giveTestingLoss:
         tstlosses = []
         tstlosses.append(classifier.Loss(testingdata, testinglabels))
-    # Set up variables
-    curidx = 0 if batchsize > 1 else random.randrange(data.shape[0])
-    endidx = batchsize  # the ending index doesn't have to be in the bounds of the array
+    # Set up variables for sequential batching
+    # curidx = 0 if batchsize > 1 else random.randrange(data.shape[0])
+    # endidx = batchsize  # the ending index doesn't have to be in the bounds of the array
     # Perform g.d.
     while True:
         # remember the old weights
         oldw = classifier.w.copy()
+        # Get the data (sequential batching):
+        #curdata = data[curidx:endidx]
+        #curlabels = labels[curidx:endidx]
+        # Sample the data (sampled batching):
+        indeces = random.sample(range(data.shape[0]), batchsize)
+        curdata = data[indeces]
+        curlabels = labels[indeces]
         # calculate the gradient
-        grad = classifier.Gradient(data[curidx:endidx], labels[curidx:endidx])
+        grad = classifier.Gradient(curdata, curlabels)
         # update the weights
         classifier.w -= r * grad
         # check the loss
         if giveTrainingLoss:
-            trlosses.append(classifier.Loss(data, labels))
+            trlosses.append(classifier.Loss(curdata, curlabels))
         if giveTestingLoss:
             tstlosses.append(classifier.Loss(testingdata, testinglabels))
         # check for tolerance
@@ -48,9 +55,9 @@ def GradientDescent(data, labels, classifier, batchsize, r, tolerance=None, T=No
                 break
             else:
                 T -= 1
-        # update the batch indeces
-        curidx = endidx % data.shape[0] if batchsize > 1 else random.randrange(data.shape[0])
-        endidx = curidx + batchsize
+        # update the batch indeces (sequential batching)
+        #curidx = endidx % data.shape[0] if batchsize > 1 else random.randrange(data.shape[0])
+        #endidx = curidx + batchsize        
     # return the classifier and report the loss (if requested)
     if giveTrainingLoss and giveTestingLoss:
         return (classifier, trlosses, tstlosses)
