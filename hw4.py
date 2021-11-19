@@ -30,47 +30,49 @@ tstlabels = np.array([1 if d[4] == 1 else -1 for d in rawtesting])
 
 print('Part 2.a\n')
 
-# Set to True to run this part
+    
+# The function for r for part 2.a
+def arfunc(t, args):
+    (r_0, a) = args # current best: (1, 1/10)
+    return r_0/(1+(r_0*t)/a)
 
-if True:
+# The function for r for part 2.b
+def brfunc(t, r_0):
+    return r_0/(1+t)
+
+
+
+T = 100
+# These values are in the following format:
+# (C, startri, endri, startai, endai)
+vals = []
+vals.append((100/873, 1/10, 1/10))
+#vals.append((500/873, -5, 5, -5, 5))
+#vals.append((700/873, -20, 20, -100, 0))
+for (C, r_0, a) in vals:
+    w = np.zeros(trdata.shape[1])
+    model = SVM(w)
+    losses = SVMSGD(trdata, trlabels, model, T, C, rfunc, (r_0, a), ReportObjFunc=True)
+            
+    # Report the results
+    print('Results for C=' + str(C) + ':')
+    # Found hyperparameters
+    print('Tuned hyperparameters:')
+    print('\t r_0 = ' + str(r_0))
+    print('\t a = ' + str(a))
+    # Final weights
+    print('Final weights [b, w_0, w_1, ...]:')
+    print(model.w)
+    # Final Errors
+    print('Training error: ' + str(AverageError(trdata, trlabels, model)))
+    print('Testing error: ' + str(AverageError(tstdata, tstlabels, model)))
+    # Loss graph:
+    print('Loss graph: (opens a window, close window to continue)')
+    x = np.linspace(0, len(losses), num=len(losses))
+    plt.plot(x, losses)
+    plt.show()
+    print()
     
-    def rfunc(t, args):
-        (r_0, a) = args # current best: (1, 1/10)
-        return r_0/(1+(r_0*t)/a)
-    
-    T = 100
-    # These values are in the following format:
-    # (C, startri, endri, startai, endai)
-    vals = []
-    vals.append((100/873, 1/10, 1/10))
-    #vals.append((500/873, -5, 5, -5, 5))
-    #vals.append((700/873, -20, 20, -100, 0))
-    for (C, r_0, a) in vals:
-        w = np.zeros(trdata.shape[1])
-        model = SVM(w)
-        losses = SVMSGD(trdata, trlabels, model, T, C, rfunc, (r_0, a), ReportObjFunc=True)
-                
-        # Report the results
-        print('Results for C=' + str(C) + ':')
-        # Found hyperparameters
-        print('Tuned hyperparameters:')
-        print('\t r_0 = ' + str(r_0))
-        print('\t a = ' + str(a))
-        # Final weights
-        print('Final weights [b, w_0, w_1, ...]:')
-        print(model.w)
-        # Final Errors
-        print('Training error: ' + str(AverageError(trdata, trlabels, model)))
-        print('Testing error: ' + str(AverageError(tstdata, tstlabels, model)))
-        # Loss graph:
-        print('Loss graph: (opens a window, close window to continue)')
-        x = np.linspace(0, len(losses), num=len(losses))
-        plt.plot(x, losses)
-        plt.show()
-        print()
-    
-else:
-	print('Skipped!\n')
     
     
     

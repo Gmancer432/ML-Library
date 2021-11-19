@@ -1,6 +1,7 @@
 
 import numpy as np
 import random
+import scipy.optimize
 
 
 class SVM:
@@ -73,26 +74,31 @@ def SVMSGD(data, labels, model, T, C, rfunc, rargs, ReportObjFunc=False):
 
 
 class SVMDual:
-    # w:  a numpy array of weights (+b)ADFASDF
-    def __init__(self, w):
-        self.w = w
-        
-    # The gradient wrt w, used in Stochastic GDASDFASDF
-    # x: a single data sample
-    # y: the label of the sample, in the set {-1, 1}
-    # C: tradeoff between regularization and empirical loss (recommended: 1/N)
-    # N: Number of samples in the dataset
-    # returns: gradient of the function wrt [b, w]
-    def Gradient(self, x, y, C, N):
-        w = self.w
-        out = w.copy()
-        out[0] = 0     # regularization
-        loss = 1 - y * w.dot(x)
-        if(loss > 0):  # hinge-loss
-            out -= C * N * y * x
-        return out
+    # w:  a numpy array of weights [b, w_0, w_1, ...]
+    def __init__(self):
+        self.w = None
     
-    # Returns the value of the SVM objective functionASDFAF
+    # The function to minimize (within the constraints)
+    def dualfunc(a, args):
+        args = (data, labels)
+        tocross = (data.T * labels * a).T
+        return 0.5 * tocross.dot(tocross.T).sum() - a.sum()
+    
+    # Finds the optimal solution, given a set of data and labels
+    # C: tradeoff between regularization and loss (recommended: 1/N)
+    def Optimize(self, data, labels, C):
+        N = data.shape[0]
+        a = np.zeros(N)
+        # Define the bounds for optimization
+        abounds = scipy.optimize.Bounds(0, C)  # 0 <= a <= C
+        linearconstraint = scipy.optimize.LinearConstraint(labels, 0, 0) # sum(a * y) = 0
+        # Optimize
+        astar = scipy.optimize.minimize(dualfunc, a, args=(data, labels), bounds=abounds, constraints=linearconstraint)
+        wstar = (data.T * labels * astar).T.sum(axis=0)
+        bstar = np.average(labels - data.dot(wstar))
+        self.w = np.arrau([*b, *w])
+    
+    # Returns the value of the SVM objective function
     def ObjFunc(self, x, y, C, N):
         w = self.w
         return 0.5 * w.dot(w) + C * N * max(0, 1-y*(w.dot(x)))
