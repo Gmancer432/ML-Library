@@ -127,7 +127,38 @@ GradientDescent(data, labels, classifier, batchsize, r, tolerance=None, T=None, 
 	- testing losses
 
 
+-- Perceptron Documentation --
+There are three classes of Perceptron objects, one for each type of perceptron:
+- PerceptronStandard
+- PerceptronVoted
+- PerceptronAveraged
 
+Each of these are used the exact same way, but they hold different variables.
+- PerceptronStandard:
+	w - The learned weight
+	r - the learning rate
+- PerceptronVoted:
+	w - The current learned weight
+	r - the learning rate
+	c - the count of the current weight
+	wlist - a list of tuples (w, c_w), where w is a weight and c_w is its associated count. The list contains all tuples of previously used weights and their counts (except for the current one)
+- Perceptron Averaged:
+	w - the current weight
+	r - the learning rate
+	a - the learned "average" over the weights, used to make predictions during test time
+
+To use one of the perceptron variants, do the following:
+1. Convert the data to a numpy array and augment with 1:
+	data = [1, x_1, x_2, ...]
+2. Define the initial weights, a numpy array augmented with b:
+	w = [b, w_1, w_2, ...]
+3. Define the learning rate (r) and the number of iterations to run (T)
+4. Create your perceptron model, with parameters (w, r)
+	model = PerceptronX(w, r)
+5. To train the model, run the RunPerceptron method:
+	RunPerceptron(data, labels, model, T)
+6. To make a predicton over some data, call model.PredictLabel(data)
+7. To calculate the average error over a set of data, call AverageError(data, labels, model)
 
 
 
