@@ -79,12 +79,12 @@ class LinearKernel:
         pass
     
     # Vectorized form used during optimization
-    def optim(x, y, a):
+    def optim(self, x, y, a):
         tocross = (x.T * y * a).T
         return tocross.dot(tocross.T).sum()
     
     # Vectorized form used during prediction
-    def pred(x, y, a, newx):
+    def pred(self, x, y, a, newx):
         tocross = (x.T * y * a).T
         return tocross.dot(newx.T).sum(axis=0)
     
@@ -98,9 +98,9 @@ class GaussianKernel:
         # compute the squared distance between all pairs of vectors in x
         dists = scipy.spatial.distance.cdist(x, x, 'sqeuclidean')
         # prepare matrix of scalars
-        crossedscalars = np.cross(y*a, y*a)
+        crossedscalars = np.outer(y*a, y*a)
         # complete the gaussian kernal + sum
-        return (crossedscalars * math.exp(-(dists/self.gamma))).sum()
+        return (crossedscalars * np.exp(-(dists/self.gamma))).sum()
     
     # Vectorized form used during prediction
     def pred(self, x, y, a, newx):
@@ -122,13 +122,12 @@ class SVMDual:
         self.svdata = None
         self.svlabels = None
         self.svastar = None
-        self.b = None
+        self.b = 0
         self.kernel = kernel(kernelargs)
     
     # The function to minimize (within the constraints)
-    def dualfunc(a, args):
-        args = (data, labels, kernel)
-        return 0.5 * kernel.optim(x, y, a) - a.sum()
+    def dualfunc(self, a, data, labels, kernel):
+        return 0.5 * kernel.optim(data, labels, a) - a.sum()
     
     # Finds the optimal solution, given a set of data and labels
     # Unlike in the primal SVM, this data is NOT augmented
@@ -141,14 +140,15 @@ class SVMDual:
         linearconstraint = scipy.optimize.LinearConstraint(labels, 0, 0) # sum(a * y) = 0
         # Optimize
         args = (data, labels, self.kernel)
-        astar = scipy.optimize.minimize(dualfunc, a, args=args, bounds=abounds, constraints=linearconstraint)
-        # retrieve b
-        wstar = (data.T * labels * astar).T.sum(axis=0)
-        self.b = np.average(labels - data.dot(wstar))
+        astar = scipy.optimize.minimize(self.dualfunc, a, args=args, bounds=abounds, constraints=linearconstraint).x
         # count up the support vectors and store them
-        self.svdata = data[astar > svlim]
-        self.svlabels = labels[astar > svlim]
-        self.svastar = astar[astar > svlim]
+        tokeep = astar > self.svlim
+        self.svdata = data[tokeep]
+        self.svlabels = labels[tokeep]
+        self.svastar = astar[tokeep]
+        # retrieve b
+        self.b = np.average(self.svlabels - self.PredictLabel(self.svdata))
+        
     
     # Returns the value of the SVM objective function
     def ObjFunc(self, x, y, C, N):
@@ -158,7 +158,7 @@ class SVMDual:
     # Unlike in the primal SVM, input data is NOT augmented with 1
     # output is either -1 or 1
     def PredictLabel(self, data):
-        return np.sign(kernel.pred(self.supportvectors, self.supportvectorlabels, self.astar, data) + b)
+        return np.sign(self.kernel.pred(self.svdata, self.svlabels, self.svastar, data) + self.b)
 
 
 # Finds the average error of a perceptron model over a dataset
