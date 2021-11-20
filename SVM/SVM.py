@@ -2,6 +2,7 @@
 import numpy as np
 import random
 import scipy.optimize
+import scipy.spatial.distance
 
 
 class SVM:
@@ -73,18 +74,64 @@ def SVMSGD(data, labels, model, T, C, rfunc, rargs, ReportObjFunc=False):
         return losses
 
 
+class LinearKernel:
+    def __init__(self, args):
+        pass
+    
+    # Vectorized form used during optimization
+    def optim(x, y, a):
+        tocross = (x.T * y * a).T
+        return tocross.dot(tocross.T).sum()
+    
+    # Vectorized form used during prediction
+    def pred(x, y, a, newx):
+        tocross = (x.T * y * a).T
+        return tocross.dot(newx.T).sum(axis=0)
+    
+    
+class GaussianKernel:
+    def __init__(self, gamma):
+        self.gamma = gamma
+    
+    # Vectorized form used during optimization
+    def optim(self, x, y, a):
+        # compute the squared distance between all pairs of vectors in x
+        dists = scipy.spatial.distance.cdist(x, x, 'sqeuclidean')
+        # prepare matrix of scalars
+        crossedscalars = np.cross(y*a, y*a)
+        # complete the gaussian kernal + sum
+        return (crossedscalars * math.exp(-(dists/self.gamma))).sum()
+    
+    # Vectorized form used during prediction
+    def pred(self, x, y, a, newx):
+        # compute the squared distance between all pairs of vectors in x, newx
+        # These are in the form x_1,newx_1; x_1,newx_2; ...
+        #                       x_2,newx_1; x_2,newx_2; ...
+        #                       ...
+        dists = scipy.spatial.distance.cdist(x, newx, 'sqeuclidean')
+        # finish the kernal
+        kout = np.exp(-dists/self.gamma)
+        # scale and sum
+        return (kout.T * y * a).T.sum(axis=0)
+
+
 class SVMDual:
-    # w:  a numpy array of weights [b, w_0, w_1, ...]
-    def __init__(self):
-        self.w = None
+
+    def __init__(self, kernel=LinearKernel, kernelargs=None):
+        self.svlim = 10E-10
+        self.svdata = None
+        self.svlabels = None
+        self.svastar = None
+        self.b = None
+        self.kernel = kernel(kernelargs)
     
     # The function to minimize (within the constraints)
     def dualfunc(a, args):
-        args = (data, labels)
-        tocross = (data.T * labels * a).T
-        return 0.5 * tocross.dot(tocross.T).sum() - a.sum()
+        args = (data, labels, kernel)
+        return 0.5 * kernel.optim(x, y, a) - a.sum()
     
     # Finds the optimal solution, given a set of data and labels
+    # Unlike in the primal SVM, this data is NOT augmented
     # C: tradeoff between regularization and loss (recommended: 1/N)
     def Optimize(self, data, labels, C):
         N = data.shape[0]
@@ -93,30 +140,25 @@ class SVMDual:
         abounds = scipy.optimize.Bounds(0, C)  # 0 <= a <= C
         linearconstraint = scipy.optimize.LinearConstraint(labels, 0, 0) # sum(a * y) = 0
         # Optimize
-        astar = scipy.optimize.minimize(dualfunc, a, args=(data, labels), bounds=abounds, constraints=linearconstraint)
+        args = (data, labels, self.kernel)
+        astar = scipy.optimize.minimize(dualfunc, a, args=args, bounds=abounds, constraints=linearconstraint)
+        # retrieve b
         wstar = (data.T * labels * astar).T.sum(axis=0)
-        bstar = np.average(labels - data.dot(wstar))
-        self.w = np.arrau([*b, *w])
+        self.b = np.average(labels - data.dot(wstar))
+        # count up the support vectors and store them
+        self.svdata = data[astar > svlim]
+        self.svlabels = labels[astar > svlim]
+        self.svastar = astar[astar > svlim]
     
     # Returns the value of the SVM objective function
     def ObjFunc(self, x, y, C, N):
-        w = self.w
-        return 0.5 * w.dot(w) + C * N * max(0, 1-y*(w.dot(x)))
-    
-    # Performs an updateASDFADF
-    # data is a single example
-    # label is either -1 or 1
-    # r: the learning rate
-    # C: tradeoff between regularization and empirical loss (recommended: 1/N)
-    # N: Number of samples in the dataset
-    def Step(self, x, y, r, C, N):
-        grad = self.Gradient(x, y, C, N)
-        self.w -= r * grad
+        raise NotImplementedError
         
-    # Predicts the label of an exampleADFASFD
+    # Predicts the label of an example
+    # Unlike in the primal SVM, input data is NOT augmented with 1
     # output is either -1 or 1
     def PredictLabel(self, data):
-        return np.sign(data.dot(self.w))
+        return np.sign(kernel.pred(self.supportvectors, self.supportvectorlabels, self.astar, data) + b)
 
 
 # Finds the average error of a perceptron model over a dataset
