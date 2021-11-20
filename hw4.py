@@ -201,8 +201,9 @@ if True:
             if C == 500/873:
                 if prevsvs is not None:
                     dists = scipy.spatial.distance.cdist(prevsvs, model.svdata, 'sqeuclidean')
-                    numoverlapping = dists[dists<model.svlim].size
-                    print('There are [' + str(numoverlapping) + '] overlapping support vectors from the previous value of gamma')
+                    overlap = np.min(dists, axis=0)
+                    numoverlap = np.count_nonzero(overlap <= model.svlim)
+                    print('There are [' + str(numoverlap) + '] support vectors in this value of gamma that overlap with those from the previous value of gamma.')
                 prevsvs = model.svdata
             print()
     
