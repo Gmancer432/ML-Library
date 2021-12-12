@@ -27,7 +27,7 @@ print('Part 2.b\n')
 
 # Set to True to run this part
 
-if False:
+if True:
     lr0 = 1/1000
     d = 1/10
     numepochs = 10
