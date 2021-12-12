@@ -161,6 +161,56 @@ To use one of the perceptron variants, do the following:
 7. To calculate the average error over a set of data, call AverageError(data, labels, model)
 
 
+-- Soft SVM Documentation --
+Note that this is *not* documentation for the dual SVM or kernel SVM, listed below.
+
+Data and labels must be in separate numpy arrays. Data is augmented with 1 (x is in the format [1, x_0, x_1, ...]) and labels are in {-1, 1}.
+To use Soft SVM:
+1. Create an SVM object
+	- SVM(w)
+	- w: the initial value of the weights + bias ([b, w_0, w_1, ...]). Must be the same dimensionality as the augmented data.
+2. Define your learning rate function. This function lets the learning rate change with each epoch.
+	- must have a signature of rfunc(t, args):
+	- t: the current epoch
+	- args: a tuple of additional parameters needed to complete the function. You will make this tuple yourself and give it to the learning function later. 
+3. Run the Soft SVM through gradient descent with the SMVSGD method
+	- SVMSGD(data, labels, model, T, C, rfunc, rargs, ReportObjFunc=False)
+	- data: your augmented data
+	- labels: your labels
+	- model: the SVM object to train
+	- T: the number of epochs to run
+	- C: The tradeoff between regularization and empirical loss (usually 1/N, N being the number of data samples)
+		- As a reminder, this SGD uses the following general loss function:
+		- R(w) + C*N*L(x, w)
+		- R: regularization function
+		- N: number of samples
+		- L: Empirical loss function
+	- rfunc: the learning rate function
+	- rargs: the tuple of other parameters for the learning rate function
+	- ReportObjFunc: If true, this function returns a list containing the loss at each step.
+4. Once training is done, you may call model.PredictLabel(data) to make predictions.  This data must also be augmented.
+
+
+-- Dual and Kernel SVM Documentation --
+Both the Dual and Kernel SVM are combined into the same type of object (SVMDual). Unlike with the Primal (Soft) SVM, the data is NOT augmented with 1.
+To use DualSVM, do the following:
+1. Pick your kernel. There are currently two types of kernels:
+	- Linear kernel: used for performing the dual of the Soft SVM
+	- Gaussian kernel: used for performing kernel SVM with the following kernel: K(x, x_new)=exp(-||x - x_new||^2 / gamma)
+		- Gamma is a parameter that you must provide, represents the variance
+For either of these kernels, you don't actually make the object. You provide the class and any arguments to the SVMDual class when making an object.
+2. Make an instance of SVMDual:
+	- SVMDual(kernel, kernelargs)
+	- If no args are given, then it defaults to the linear kernel.
+	- kernel: the class of the kernel you want to use
+	- kernelargs: parameters to the kernel, if needed.
+3. Optimize the model with model.Optimize(data, labels, C)
+	- data: the training data. Again, this data is *not* augmented with 1.
+	- labels: the training labels
+	- C: Like in the Soft SGD, the trade-off between regularization and empirical loss (often 1/N).
+4. Once trained, you can make predictions with model.PredictLabel(data)
+
+
 
 
 
