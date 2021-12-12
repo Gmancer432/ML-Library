@@ -23,12 +23,59 @@ tstlabels = np.array([1 if d[4] == 1 else -1 for d in rawtesting])
 (trnum, dim) = trdata.shape
 
 
+print('Part 2.b\n')
 
-print('test\n')
+# Set to True to run this part
+
+if False:
+    lr0 = 1/1000
+    d = 1/10
+    numepochs = 10
+    for layerlen in (5, 10, 25, 50, 100):
+        print('Layer Length: ' + str(layerlen))
+        model = ClassifNN(dim, layerlen, initnormal)
+        losses = model.GradientDescent(trdata, trlabels, numepochs, lr0, d, ReportLosses=True)
+        print('Average Training error: ' + str(AverageError(trdata, trlabels, model)))
+        print('Average Testing error: ' + str(AverageError(tstdata, tstlabels, model)))
+        print()
+        if False:
+            xaxis = np.array(range(len(losses)))
+            plt.plot(xaxis, losses)
+            plt.show()
+    
+else:
+	print('Skipped!\n')
+
+
+print('Part 2.c\n')
 
 # Set to True to run this part
 
 if True:
+    lr0 = 1/100
+    d = 1/10
+    numepochs = 10
+    for layerlen in (5, 10, 25, 50, 100):
+        print('Layer Length: ' + str(layerlen))
+        model = ClassifNN(dim, layerlen, initzeros)
+        losses = model.GradientDescent(trdata, trlabels, numepochs, lr0, d, ReportLosses=True)
+        print('Average Training error: ' + str(AverageError(trdata, trlabels, model)))
+        print('Average Testing error: ' + str(AverageError(tstdata, tstlabels, model)))
+        print()
+        if False:
+            xaxis = np.array(range(len(losses)))
+            plt.plot(xaxis, losses)
+            plt.show()
+    
+else:
+	print('Skipped!\n')
+
+
+print('Test Part\n')
+
+# Set to True to run this part
+
+if False:
 
     testdata = np.array([1, 2, 3, 4])
     model = ClassifNN(4, 2, initones)

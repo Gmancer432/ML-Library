@@ -79,7 +79,7 @@ class ClassifNN:
         der_lin1 = der_out1 * der_sigmoid(lin_1)
         der_w1 = np.outer(der_lin1, out_0)
         der_b1 = der_lin1 * 1
-        der_out0 = der_lin1.dot(w_1)
+        der_out0 = der_lin1.dot(self.w_1)
         
         der_lin0 = der_out0 * der_sigmoid(lin_0)
         der_w0 = np.outer(der_lin0, data)
@@ -87,11 +87,11 @@ class ClassifNN:
         
         # Apply gradients
         self.w_f -= lr * der_wf
-        self.w_b -= lr * der_bf
+        self.b_f -= lr * der_bf
         self.w_1 -= lr * der_w1
-        self.w_1 -= lr * der_b1
+        self.b_1 -= lr * der_b1
         self.w_0 -= lr * der_w0
-        self.w_0 -= lr * der_b0
+        self.b_0 -= lr * der_b0
         
         # Report the loss, if needed
         if reportloss:
@@ -99,6 +99,48 @@ class ClassifNN:
             
     
     # Performs stochastic gradient descent on the model
+    # data: np array of data
+    # labels: the associated labels
+    # numepochs: number of times to run through the data
+    # lr0: initial learning rate
+    # d: a parameter in the learning rate function
+    #    lr_t = lr_0 / (1 + lr_0 * t / d)
+    def GradientDescent(self, data, labels, numepochs, lr0, d, ReportLosses=False):
+        # set up values
+        idxs = np.array(range(data.shape[0]))
+        losses = []
+        for t in range(numepochs):
+            # shuffle the data
+            np.random.shuffle(idxs)
+            # update the learning rate
+            lr = lr0 / (1 + lr0 * t / d)
+            for i in idxs:
+                # perform a step in the gradient descent
+                loss = self.gradientdescentstep(data[i], labels[i], lr, ReportLosses)
+                if ReportLosses:
+                    losses.append(loss)
+        if ReportLosses:
+            return losses
+            
+    # Makes predictions on new data
+    # Predictions are in {-1, 1}
+    def PredictLabel(self, data):
+        lin_0 = data.dot(self.w_0.T) + self.b_0
+        out_0 = sigmoid(lin_0)
+        lin_1 = out_0.dot(self.w_1.T) + self.b_1
+        out_1 = sigmoid(lin_1)
+        out_f = out_1.dot(self.w_f.T) + self.b_f
+        #print(self.w_0, self.w_1, self.w_f)
+        #print(out_f)
+        return np.sign(out_f)
+        
+        
+# Finds the average error over a dataset
+def AverageError(data, labels, model):
+    N = data.shape[0]
+    outputs = model.PredictLabel(data)
+    incorrectoutputs = [1 if outputs[i] != labels[i] else 0 for i in range(N)]
+    return np.sum(incorrectoutputs) / N
         
     
     
