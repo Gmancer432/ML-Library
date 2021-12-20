@@ -1,6 +1,5 @@
 
 from Util.util import *
-from KaggleAttempts import RandomForestAtmpt, LinearRegressionAtmpt, LinearClassificationAtmpt, RandomForestAtmpt2
 
 # Note: the first row of this data is the header
 # Only the training data has labels
@@ -29,6 +28,11 @@ if False:
 
 # Random Forest with extra pre-processing
 # Categorical attributes are converted to vectors of boolean attributes
-if True:
+if False:
     from KaggleAttempts import RandomForestAtmpt2
     RandomForestAtmpt2.main(rawtraining, rawtesting)
+
+# SVM Dual with Gaussian Kernel
+if True:
+    from KaggleAttempts import SVMGaussAtmpt
+    SVMGaussAtmpt.main(rawtraining, rawtesting)
