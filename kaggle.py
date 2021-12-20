@@ -34,11 +34,11 @@ if False:
 
 # SVM Dual with Gaussian Kernel
 # This one takes too much memory and time
-if False:
+if True:
     from KaggleAttempts import SVMGaussAtmpt
     SVMGaussAtmpt.main(rawtraining, rawtesting)
 
 # SVM Dual with Gaussian Kernel
-if True:
+if False:
     from KaggleAttempts import SoftSVMAtmpt
     SoftSVMAtmpt.main(rawtraining, rawtesting)
