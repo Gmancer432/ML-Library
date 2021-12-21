@@ -57,7 +57,7 @@ def main(raw_training, raw_testing):
     # convert to vectorized nparray
     labeled_data = []
     for r in raw_training:
-      l = []
+      l = [1]
       for cidx in range(14):
         if cidx in (0, 2, 4, 10, 11, 12):
           l.append(r[cidx])
@@ -76,7 +76,7 @@ def main(raw_training, raw_testing):
     
     new_data = []
     for r in raw_testing:
-      l = []
+      l = [1]
       for cidx in range(14):
         if cidx in (0, 2, 4, 10, 11, 12):
           l.append(r[cidx])
@@ -91,18 +91,76 @@ def main(raw_training, raw_testing):
       new_data.append(l)
     new_data = np.array(new_data)
     
+    def rfunc(t, args):
+        (r_0, a) = args
+        return r_0/(1+(r_0*t)/a)
+    
+    # Find Hyperparameters
+    if False:
+        N = len(labeled_data)
+        k = 5
+        idxs = np.array(range(len(labeled_data)))
+        bestvalacc = 0
+        (bestepochs, bestC, bestr_0, besta) = (0, 0, 0, 0)
+        # Test epochs
+        for t in (5, 10, 25, 50, 100, 500, 1000):
+            # test C
+            for c in (100/N, 10/N, 1/N, 0.1/N, 0.01/N):
+                # test r_0
+                for r in (1, 0.1, 0.01, 0.001, 0.0001):
+                    # test a
+                    for atest in (100, 10, 1, 0.1, 0.01, 0.001):
+                        # k-fold cross validation
+                        np.random.shuffle(idxs)
+                        idxslices = np.array_split(idxs, k)
+                        summedvalaccs = 0
+                        for ki in range(k):
+                            tridxs = np.concatenate((*idxslices[0:ki], *idxslices[ki+1:]))
+                            train_data = labeled_data[tridxs]
+                            train_labels = labels[tridxs]
+                            
+                            validxs = idxslices[ki] 
+                            val_data = labeled_data[validxs]
+                            val_labels = labels[validxs]
+                            
+                            w = np.zeros(train_data.shape[1])
+                            model = SVM(w)
+                            SVMSGD(train_data, train_labels, model, t, c, rfunc, (r, atest))
+                            
+                            summedvalaccs += AverageError(val_data, val_labels, model)
+                        avgvalacc = summedvalaccs / k
+                        if avgvalacc > bestvalacc:
+                            (bestvalacc, bestepochs, bestC, bestr_0, besta) = (avgvalacc, t, c, r, atest)
+                            print('New best validation:', avgvalacc)
+                            print('\tparams:', t, c, r, atest)
+        (epochs, C, r_0, a) = (bestepochs, bestC, bestr_0, besta)
+        print('Best determined validation:', bestvalacc)
+        print('Chosen params:')
+        print('\tepochs:', bestepochs)
+        print('\tC:', bestC)
+        print('\tr_0:', bestr_0)
+        print('\ta:', besta)
+                                
+    else:
+        # If not looking for parameters, then these will be used
+        # These current ones aren't the greatest, but due to time constraints I'm not able to find better ones
+        epochs = 5
+        C = 0.0004
+        r_0 = 0.01
+        a = 0.01
+    
+    
     # Train the model
-    variance = labeled_data.var(axis=0).mean()
-    model = SVMDual(GaussianKernel, variance)
-    C = 1 / len(labeled_data)
-    model.Optimize(labeled_data, labels, C)
-    print('SVM Gauss Error: ' + str(AverageError(labeled_data, labels, model)))
+    w = np.zeros(train_data.shape[1])
+    model = SVM(w)
+    SVMSGD(labeled_data, labels, model, epochs, C, rfunc, (r_0, a))
+    print('Soft SVM Average Error: ' + str(AverageError(labeled_data, labels, model)))
     # Generate the output
     numsamples = new_data.shape[0]
     idxs = np.array(range(numsamples))
     output = classif.PredictLabel(new_data)
     output = [1 if d == 1 else 0 for d in output]  # convert labels to {0, 1}
-    SaveCSV([[int(i), output[int(i-1)]] for i in idxs], 'Outputs/Kaggle/SVM_Gauss_output.csv', ['ID', 'Prediction'])
+    SaveCSV([[int(i), output[int(i-1)]] for i in idxs], 'Outputs/Kaggle/Soft_SVM_output.csv', ['ID', 'Prediction'])
     
     
 

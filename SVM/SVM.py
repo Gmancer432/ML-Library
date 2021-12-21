@@ -140,7 +140,7 @@ class SVMDual:
         linearconstraint = scipy.optimize.LinearConstraint(labels, 0, 0) # sum(a * y) = 0
         # Optimize
         args = (data, labels, self.kernel)
-        astar = scipy.optimize.minimize(self.dualfunc, a, args=args, method='SLSQP', options={'maxiter' : 100}, bounds=abounds, constraints=linearconstraint).x
+        astar = scipy.optimize.minimize(self.dualfunc, a, args=args, method='SLSQP', options={'maxiter' : 10}, bounds=abounds, constraints=linearconstraint).x
         # count up the support vectors and store them
         tokeep = astar > self.svlim
         self.svdata = data[tokeep]
@@ -167,3 +167,30 @@ def AverageError(data, labels, model):
     outputs = model.PredictLabel(data)
     incorrectoutputs = [1 if outputs[i] != labels[i] else 0 for i in range(N)]
     return np.sum(incorrectoutputs) / N
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

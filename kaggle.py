@@ -39,6 +39,6 @@ if True:
     SVMGaussAtmpt.main(rawtraining, rawtesting)
 
 # SVM Dual with Gaussian Kernel
-if False:
+if True:
     from KaggleAttempts import SoftSVMAtmpt
     SoftSVMAtmpt.main(rawtraining, rawtesting)
