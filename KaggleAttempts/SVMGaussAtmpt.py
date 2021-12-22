@@ -99,7 +99,7 @@ def main(raw_training, raw_testing):
     print('SVM Gauss Error: ' + str(AverageError(labeled_data, labels, model)))
     # Generate the output
     numsamples = new_data.shape[0]
-    idxs = np.array(range(numsamples))
+    idxs = np.array(range(1, numsamples+1))
     output = model.PredictLabel(new_data)
     output = [1 if d == 1 else 0 for d in output]  # convert labels to {0, 1}
     SaveCSV([[int(i), output[int(i-1)]] for i in idxs], 'Outputs/Kaggle/SVM_Gauss_output.csv', ['ID', 'Prediction'])
