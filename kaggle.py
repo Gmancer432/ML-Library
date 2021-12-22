@@ -42,3 +42,8 @@ if True:
 if True:
     from KaggleAttempts import SoftSVMAtmpt
     SoftSVMAtmpt.main(rawtraining, rawtesting)
+
+# Neural Network
+if True:
+    from KaggleAttempts import NNAtmpt
+    NNAtmpt.main()
