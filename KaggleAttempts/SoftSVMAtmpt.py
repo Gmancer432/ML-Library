@@ -151,7 +151,7 @@ def main(raw_training, raw_testing):
     
     
     # Train the model
-    w = np.zeros(train_data.shape[1])
+    w = np.zeros(Labeled_data.shape[1])
     model = SVM(w)
     SVMSGD(labeled_data, labels, model, epochs, C, rfunc, (r_0, a))
     print('Soft SVM Average Error: ' + str(AverageError(labeled_data, labels, model)))
