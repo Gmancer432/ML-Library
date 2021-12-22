@@ -144,9 +144,9 @@ def main(raw_training, raw_testing):
     else:
         # If not looking for parameters, then these will be used
         # These current ones aren't the greatest, but due to time constraints I'm not able to find better ones
-        epochs = 10000
+        epochs = 100000
         C = 0.4
-        r_0 = 1
+        r_0 = 0.1
         a = 0.01
     
     
