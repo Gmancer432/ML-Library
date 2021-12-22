@@ -33,12 +33,12 @@ if False:
     RandomForestAtmpt2.main(rawtraining, rawtesting)
 
 # SVM Dual with Gaussian Kernel
-# This one takes too much memory and time
+# This one takes too much memory and time to do fully
 if True:
     from KaggleAttempts import SVMGaussAtmpt
     SVMGaussAtmpt.main(rawtraining, rawtesting)
 
-# SVM Dual with Gaussian Kernel
+# SoftSVM
 if True:
     from KaggleAttempts import SoftSVMAtmpt
     SoftSVMAtmpt.main(rawtraining, rawtesting)

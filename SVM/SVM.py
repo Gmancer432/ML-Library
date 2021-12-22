@@ -140,7 +140,7 @@ class SVMDual:
         linearconstraint = scipy.optimize.LinearConstraint(labels, 0, 0) # sum(a * y) = 0
         # Optimize
         args = (data, labels, self.kernel)
-        astar = scipy.optimize.minimize(self.dualfunc, a, args=args, method='SLSQP', options={'maxiter' : 10}, bounds=abounds, constraints=linearconstraint).x
+        astar = scipy.optimize.minimize(self.dualfunc, a, args=args, method='SLSQP', options={'maxiter' : 1}, bounds=abounds, constraints=linearconstraint).x
         # count up the support vectors and store them
         tokeep = astar > self.svlim
         self.svdata = data[tokeep]
